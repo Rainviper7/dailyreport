@@ -6,24 +6,7 @@ var fs = require('fs');
 var dateFormat = require('dateformat');
 var path = require('path');
 
-//----------main---
-// main();
-
-function Report(pathPdf, data) {
-    var _path = pathPdf;
-    var _data = data;
-
-    var filename = _path;
-    var data = _data;
-
-    var dailyReport = new pdf;
-    var now = new Date()
-    var datetime = dateFormat(now, "dd mmmm yyyy, HH:MM:ss");
-    // var filename ='daily_report_email_v1_4.pdf';
-    var fontpath = path.join(__dirname,'fonts','ARIALUNI.ttf');
-    // var fontpath = './dailyreport2/v1_4/fonts/ARIALUNI.ttf';  //debug path
-
-    //---------constant
+//---------constant
     var ROW_DEFAULT = 50;
     var FONT_SIZE_HEADER = 14;
     var FONT_SIZE = 9.5;
@@ -134,6 +117,27 @@ function Report(pathPdf, data) {
         NAME: TAB_TABLE_CHART_DETAIL.NAME + 5,
         LAST: TAB_TABLE_CHART_DETAIL.LAST - 5
     }
+
+//----------main---
+function Report(pathPdf, data) {
+    var _path = pathPdf;
+    var _data = data;
+
+    var filename = _path;
+    var data = _data;
+
+    var dailyReport = new pdf;
+    var now = new Date()
+    var datetime = dateFormat(now, "dd mmmm yyyy, HH:MM:ss");
+    var fontpath = path.join(__dirname,'fonts','ARIALUNI.ttf');
+    var fontpath_bold = path.join(__dirname,'fonts','arialbd.ttf');
+   
+   dailyReport.registerFont('font_style_normal',fontpath,'')
+   dailyReport.registerFont('font_style_bold',fontpath_bold,'')
+    
+        // dailyReport.font('font_style_bold')
+        // dailyReport.font('font_style_normal')
+    
     return {
         buildPdf: buildPdf
     }
@@ -144,14 +148,12 @@ function Report(pathPdf, data) {
         main();
         console.log("- Genearate Complete : "+filename);
     }
-    //-----reportexport------
-    //-----------------------
 
-    //=================
     //------------function
     function main() {
         dailyReport.pipe(fs.createWriteStream(filename));
-        dailyReport.font(fontpath);
+        // dailyReport.font(fontpath);
+        dailyReport.font('font_style_normal')
         //gridmarker(1700,800,100,2);
         drawHeader();
         drawBody();
@@ -204,9 +206,7 @@ function Report(pathPdf, data) {
         //NewLine(TEXT_SPACE);
       if (hilight) {
 
-// dailyReport.highlight(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TOTAL.LAST - TAB_TABLE_CHART_TOTAL.NAME), row_p1 - row_hilight + 15, { color: '#ddd' });
-            
-dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TOTAL.LAST - TAB_TABLE_CHART_TOTAL.NAME), 101 + 15).fill('#ddd'); //fixcode
+            dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TOTAL.LAST - TAB_TABLE_CHART_TOTAL.NAME), 101 + 15).fill('#ddd'); //fixcode
 
         dailyReport.fill('black');
 
@@ -217,15 +217,7 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
 
 
         //--------------
-//         if (hilight) {
 
-// // dailyReport.highlight(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TOTAL.LAST - TAB_TABLE_CHART_TOTAL.NAME), row_p1 - row_hilight + 15, { color: '#ddd' });
-            
-// dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TOTAL.LAST - TAB_TABLE_CHART_TOTAL.NAME), row_p1 - row_hilight + 15).fill('#ddd');
-
-//         dailyReport.fill('black');
-
-//         }
         row_hilight = 0;
         hilight = false;
 
@@ -278,13 +270,6 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
             })
 
             _.forEach(itemfillter, function (item, key) {
-
-                //     addItems(item,key);
-
-                //     _.forEach(TAB_TABLE
-                // ,function(value,key){
-                //         addColumnLine(value);
-                //     })
 
                 if (((key + 1) % 2) == 1) {
                     row_hilight = ROW_CURRENT;
@@ -383,7 +368,14 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
         NewLine(FONT_SIZE + TEXT_SPACE_LOWER * 2);
 
         //-----topping----
-        NewLine(TEXT_SPACE);
+        //NewLine(TEXT_SPACE);
+        var ToppingGroupsFiltered = _.filter(data.Sales.ToppingGroups, function (c) {
+            return c.Quantity != 0;
+        });
+
+        if(ToppingGroupsFiltered.length==0){
+
+        }else{
 
         dailyReport.fontSize(FONT_SIZE_HEADER)
             .text("Topping Menu", TAB_TABLE
@@ -395,9 +387,7 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
             });
         NewLine(FONT_SIZE_HEADER + TEXT_SPACE_LOWER * 2);
 
-        var ToppingGroupsFiltered = _.filter(data.Sales.ToppingGroups, function (c) {
-            return c.Quantity != 0;
-        });
+
 
         _.forEach(ToppingGroupsFiltered, function (expen1, key) {
 
@@ -460,7 +450,7 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
                 align: 'left'
             });
         NewLine(FONT_SIZE + TEXT_SPACE_LOWER * 2);
-
+    }
         //-----------------
 
         //-----------DeletedMenu
@@ -547,10 +537,11 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
         }
         //--------------Expenses
         var ExpensesGroupFiltered = _.filter(data.Expenses, function (c) {
-            return c.Amount != 0 && c.Quantity != 0;
+            return c.Amount != 0;
         });
 
-        if (ExpensesGroupFiltered.length == 0) {
+        
+     if (ExpensesGroupFiltered.length == 0) {
 
         }
         else {
@@ -576,7 +567,7 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
 
 
 
-            var ExpensesGroupFiltered = data.Expenses;
+            var ExpensesGroupFiltered = data.Expenses; //--fixcode
 
             _.forEach(ExpensesGroupFiltered, function (expen1, key) {
 
@@ -638,12 +629,8 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
                     align: 'left'
                 });
             NewLine(FONT_SIZE + TEXT_SPACE_LOWER * 2);
-        }
-
-    }
-    function drawFooter() {
-
-        NewLine(FONT_SIZE_HEADER + TEXT_SPACE_LOWER * 2);
+//--------------
+ NewLine(FONT_SIZE_HEADER + TEXT_SPACE_LOWER * 2);
         dailyReport.fontSize(FONT_SIZE_HEADER)
             .text("ยอดสุทธิ", TAB_TABLE
                 .INDEX, ROW_CURRENT, {
@@ -653,7 +640,10 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
                 align: 'left'
             })
 
-            .text("฿ " + numberWithCommas(data.GrandTotal), TAB_TABLE
+ var footerGrandtotal = data.GrandTotal //--fixcode
+ footerGrandtotal = data.GrandTotal-data.Expense //--fixcode
+
+            dailyReport.text("฿ " + numberWithCommas2(footerGrandtotal), TAB_TABLE
                 .AMOUNT, ROW_CURRENT, {
                 width: TAB_TABLE
                     .LAST - TAB_TABLE
@@ -662,6 +652,15 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
             });
 
         NewLine(FONT_SIZE_HEADER + TEXT_SPACE_LOWER * 2);
+
+//---------------
+
+        }
+
+    }
+    function drawFooter() {
+
+       
 
         addTableLine(TAB_TABLE
             .INDEX, ROW_CURRENT, TAB_TABLE
@@ -824,7 +823,9 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
                 align: 'left'
             })
 
-            .text("฿ " + numberWithCommas(data.GrandTotal),
+
+
+            dailyReport.text("฿ " + numberWithCommas(data.GrandTotal),
             TAB_CHART_TOTAL
                 .NAME, row_p1, {
                 width: TAB_CHART_TOTAL
@@ -844,6 +845,7 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
     }
     function addCatalog(itemgroup) {
 
+        
         dailyReport.fontSize(FONT_SIZE_CATALOG)
             .text('', TAB_CATALOG, ROW_CURRENT)
             .text('Qty', TAB_CATALOG.QUANTITY, ROW_CURRENT)
@@ -856,7 +858,7 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
             addColumnLine(value);
 
         })
-
+       
         NewLine(TEXT_SPACE);
 
 
@@ -879,13 +881,15 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
             .text(item.Percent + "%", TAB_ITEMS.PERCENT, ROW_CURRENT, {
                 width: TAB_TABLE.LAST - (TAB_TABLE.PERCENT + 10), align: 'right'
             });
+            
     }
 
     function addSubItems(subitem) {
         dailyReport.fontSize(FONT_SIZE)
             .text("        " + subitem.Name, TAB_ITEMS.NAME, ROW_CURRENT)
             .text("        " + subitem.Quantity, TAB_ITEMS.QUANTITY, ROW_CURRENT)
-            .text("        " + "฿ " + subitem.Amount, TAB_ITEMS.AMOUNT, ROW_CURRENT);
+            .text("        " + "฿ " + subitem.Amount, TAB_ITEMS.AMOUNT, ROW_CURRENT)
+
     }
 
     function addToppingGroups(toppinggroup) {
@@ -987,10 +991,6 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
     }
 
     function addHilight(position, row_height) {
-        //         dailyReport.highlight(TAB_TABLE
-        // .INDEX,position,(TAB_TABLE
-        // .LAST-TAB_TABLE
-        // .INDEX),row_height, {color : '#ddd'});
 
         dailyReport.rect(TAB_TABLE
             .INDEX, position, (TAB_TABLE
@@ -1106,6 +1106,13 @@ dailyReport.rect(TAB_TABLE_CHART_TOTAL.NAME, row_hilight - 5,(TAB_TABLE_CHART_TO
     function numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
+
+//--fixcode
+    function numberWithCommas2(x) {
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+}
 
 
 }
