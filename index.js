@@ -240,7 +240,7 @@ function Report(pathPdf, data) {
 
         console.log("- building Menu ");
         dailyReport.fontSize(FONT_SIZE_HEADER)
-            .text("Menu", TAB_TABLE
+            .text("Products", TAB_TABLE
                 .INDEX, ROW_CURRENT, {
                 width: TAB_TABLE
                     .QUANTITY - TAB_TABLE
@@ -251,15 +251,12 @@ function Report(pathPdf, data) {
         NewLine(FONT_SIZE_HEADER + TEXT_SPACE_LOWER * 2);
 
         console.log("- building Table ");
-        //--build hilight
 
         CatalogFiltered = _.filter(data.Sales.Catalogs, function (c) {
             return c.Amount != 0 && c.Quantity != 0;
         });
 
         _.forEach(CatalogFiltered, function (itemgroup, i, l) {
-
-            // console.log("- CatalogFiltered : i : " + i + " ,length: " + l.length + " - ROW_CURRENT : " + ROW_CURRENT);
 
             addTableLine(TAB_TABLE.INDEX, ROW_CURRENT, TAB_TABLE.LAST, ROW_CURRENT); //row line
 
@@ -291,8 +288,6 @@ function Report(pathPdf, data) {
                 });
 
             NewLine(TEXT_SPACE);
-
-
 
             checkPositionOutsideArea();
 
@@ -332,7 +327,7 @@ function Report(pathPdf, data) {
                         addColumnLine(value);
 
                     })
-                    // console.log("-- itemfillter (sub==1): ,i : " + key + " ,lenght : " + itemfillter.length + "-- ROW_CURRENT : " + ROW_CURRENT);
+
                     addItems(item, key);//--text
                     NewLine(TEXT_SPACE);
 
@@ -357,7 +352,7 @@ function Report(pathPdf, data) {
                     _.forEach(TAB_TABLE, function (value, key) {
                         addColumnLine(value);
                     });
-                    // console.log("-- itemfillter (sub!=1): ,i : " + key + " ,lenght : " + itemfillter.length + "-- ROW_CURRENT : " + ROW_CURRENT);
+
                     addItems(item, key);//--text
                     NewLine(TEXT_SPACE);
 
@@ -375,7 +370,6 @@ function Report(pathPdf, data) {
                             addColumnLine(value);
                         });
 
-                        // console.log("--- subitemfillter : ,lenght : " + subitemfillter.length + "--- ROW_CURRENT : " + ROW_CURRENT);
                         addSubItems(subitem);//--text
                         NewLine(TEXT_SPACE);
 
@@ -514,8 +508,6 @@ function Report(pathPdf, data) {
                 });
             NewLine(FONT_SIZE_HEADER + TEXT_SPACE_LOWER * 2);
 
-
-
             _.forEach(DeleteGroupsFiltered, function (expen1, key) {
 
                 addTableLine(TAB_TABLE
@@ -523,7 +515,6 @@ function Report(pathPdf, data) {
                         .LAST, ROW_CURRENT); //row line
 
                 addToppingGroups(expen1);
-
 
                 _.forEach(TAB_CATALOG2, function (value, key) {
                     addColumnLine(value);
@@ -717,7 +708,6 @@ function Report(pathPdf, data) {
             });
 
         dailyReport.fillColor('black');
-
 
     }
 
@@ -971,7 +961,10 @@ function Report(pathPdf, data) {
         dailyReport.fontSize(FONT_SIZE)
             .text(key + 1 + '.', TAB_EXPENSES.INDEX, ROW_CURRENT)
             .text(item.Name, TAB_EXPENSES.NAME, ROW_CURRENT)
-            .text("฿ " + numberWithCommas(item.Amount), TAB_EXPENSES.AMOUNT, ROW_CURRENT)
+            .text("฿ " + numberWithCommas(item.Amount), TAB_EXPENSES.AMOUNT, ROW_CURRENT,{
+                width: TAB_EXPENSES.PERCENT-10 - TAB_EXPENSES.AMOUNT,
+                align: 'right'
+            })
             .text((item.Percent * 100).toFixed(2) + '%', TAB_EXPENSES.PERCENT, ROW_CURRENT, {
                 width: TAB_EXPENSES.LAST - TAB_EXPENSES.PERCENT,
                 align: 'right'
@@ -997,7 +990,7 @@ function Report(pathPdf, data) {
     }
 
     function addTableLine(sx, sy, ex, ey) {
-        dailyReport.moveTo(sx, sy).lineTo(ex, ey).stroke();
+        dailyReport.moveTo(sx, sy).lineTo(ex, ey).lineWidth(0.8).stroke();
     }
 
     function addDashLine(sx, sy, ex, ey) {
